@@ -1,9 +1,8 @@
-// components/ui/settingsPopOver.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { EllipsisVertical } from "~/lib/icons/EllipsisVertical";
 import { Settings2 } from "~/lib/icons/Settings2";
 import * as React from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,21 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import { Text } from "~/components/ui/text";
 import { ThemeToggle } from "../ThemeToggle";
 import { useColorScheme } from "~/lib/useColorScheme";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
-import { Input } from "./input";
+import { APIKeyDialog } from "~/components/APIKeyDialog";
 
 export function OptionsPopover() {
   const insets = useSafeAreaInsets();
@@ -35,9 +24,9 @@ export function OptionsPopover() {
     left: 12,
     right: 12,
   };
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const { isDarkColorScheme, setColorScheme } = useColorScheme();
+  const [isAPIKeyDialogOpen, setIsAPIKeyDialogOpen] = React.useState(false);
 
   const handleThemeToggle = () => {
     const newTheme = isDarkColorScheme ? "light" : "dark";
@@ -68,38 +57,20 @@ export function OptionsPopover() {
             <ThemeToggle />
             <Text className="text-sm text-left">Theme</Text>
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full flex justify-start items-center flex-row gap-2 p-0 !h-16"
-              >
-                <Settings2 size={24} className="text-foreground" />
-                <Text className="text-sm text-left">API Keys</Text>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Edit API Keys</DialogTitle>
-                <DialogContent>
-                  <Input className="flex-1 border rounded-full p-2 pl-5 !h-14 bg-accent" />
-                </DialogContent>
-                <DialogDescription>
-                  Make changes to your profile here. Click save when you're
-                  done.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button>
-                    <Text>OK</Text>
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="ghost"
+            className="w-full flex justify-start items-center flex-row gap-2 p-0 !h-16"
+            onPress={() => setIsAPIKeyDialogOpen(true)}
+          >
+            <Settings2 size={24} className="text-foreground" />
+            <Text className="text-sm text-left">API Keys</Text>
+          </Button>
         </PopoverContent>
       </Popover>
+      <APIKeyDialog
+        isOpen={isAPIKeyDialogOpen}
+        onClose={() => setIsAPIKeyDialogOpen(false)}
+      />
     </View>
   );
 }

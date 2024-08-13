@@ -8,21 +8,8 @@ import {
   getChatSessionWithMessages,
   addMessage,
 } from "~/db/services";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
 import { LoaderPinwheel } from "~/lib/icons/LoaderPinwheel";
-import { View } from "lucide-react-native";
 import { Button } from "../button";
-import { Input } from "../input";
-import { Text } from "../text";
 
 interface ChatInterfaceProps {
   sessionId?: string;
@@ -101,32 +88,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ sessionId }) => {
         {messages.length !== 0 ? (
           <MessageList messages={messages} />
         ) : (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="rounded-full px-0 p-6 !h-14 !w-14">
-                <LoaderPinwheel className="text-background" size={32} />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Edit API Keys</DialogTitle>
-                <DialogContent>
-                  <Input className="flex-1 border rounded-full p-2 pl-5 !h-14 bg-accent" />
-                </DialogContent>
-                <DialogDescription>
-                  Make changes to your profile here. Click save when you're
-                  done.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button>
-                    <Text>OK</Text>
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button className="rounded-full px-0 p-6 !h-14 !w-14">
+            <LoaderPinwheel className="text-background" size={32} />
+          </Button>
         )}
       </CardContent>
       <CardFooter className="px-2 -mb-6 mt-2">

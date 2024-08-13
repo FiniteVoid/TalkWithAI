@@ -142,7 +142,7 @@ export default function RootLayout() {
                 <Button
                   onPress={() => navigation.toggleDrawer()}
                   variant={"ghost"}
-                  className="p-0 mx-0"
+                  className="p-0 mx-0 !w-14"
                 >
                   <Menu size={24} className="text-foreground" />
                 </Button>

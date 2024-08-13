@@ -6,6 +6,7 @@ import { Text } from "./ui/text";
 import { Input } from "./ui/input";
 import { Search } from "~/lib/icons/Search";
 import { Plus } from "~/lib/icons/Plus";
+import { SquarePen } from "~/lib/icons/SquarePen";
 
 interface CustomDrawerContentProps {
   navigation: any;
@@ -29,8 +30,6 @@ export function CustomDrawerContent({
         : sessions.filter((session) =>
             session.topic.toLowerCase().includes(text.toLowerCase())
           );
-    console.log("Search:", text);
-    console.log("Filtered:", filtered);
     setFilteredSessions(filtered);
   };
 
@@ -90,6 +89,21 @@ export function CustomDrawerContent({
         >
           <Plus className="text-foreground/80" size={22} />
           <Text>New Session</Text>
+        </Button>
+      </View>
+      <View className="h-14 my-1">
+        <Button
+          className="items-start flex-1 flex-row gap-2 justify-start "
+          variant={"ghost"}
+          onPress={() =>
+            navigation.navigate("anthropic", {
+              sessionId: undefined,
+              topic: "",
+            })
+          }
+        >
+          <SquarePen className="text-foreground/80" size={22} />
+          <Text>Anthropic Test</Text>
         </Button>
       </View>
       {/* <Text>{filteredSessions.map((session) => session.topic)}</Text> */}
