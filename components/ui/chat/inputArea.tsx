@@ -8,13 +8,17 @@ import { useForm, Controller } from "react-hook-form";
 
 interface InputAreaProps {
   onSend: (text: string) => void;
+  onVoiceMode: () => void;
 }
 
 type ChatForm = {
   message: string;
 };
 
-export const InputArea: React.FC<InputAreaProps> = ({ onSend }) => {
+export const InputArea: React.FC<InputAreaProps> = ({
+  onSend,
+  onVoiceMode,
+}) => {
   const { control, handleSubmit, reset, formState } = useForm<ChatForm>({
     defaultValues: {
       message: "",
@@ -59,7 +63,11 @@ export const InputArea: React.FC<InputAreaProps> = ({ onSend }) => {
           className="duration-200 transition rounded-full !w-14 !h-14 p-0 flex justify-center items-center"
           variant={"ghost"}
         >
-          <Headphones className="w-3 h-3 text-foreground" size={22} />
+          <Headphones
+            className="w-3 h-3 text-foreground"
+            size={22}
+            onPress={onVoiceMode}
+          />
         </Button>
       )}
     </View>

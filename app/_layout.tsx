@@ -2,7 +2,7 @@ import "~/global.css";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Theme, ThemeProvider } from "@react-navigation/native";
-import { SplashScreen, Stack, useFocusEffect } from "expo-router";
+import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import {
@@ -24,14 +24,16 @@ import { deleteDatabaseSync, openDatabaseSync } from "expo-sqlite/next";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import migrations from "~/drizzle/migrations";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { getChatSessions } from "~/db/services";
+import { getChatSessions, deleteChatSession } from "~/db/services";
 import { Menu } from "~/lib/icons/Menu";
 import { Search } from "~/lib/icons/Search";
 import { Plus } from "~/lib/icons/Plus";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { CustomDrawerContent } from "~/components/customDrawer";
-import { OptionsPopover } from "~/components/ui/settingsPopOver";
+import { OptionsPopover } from "~/components/settingsPopOver";
+import { useDrawerStatus } from "@react-navigation/drawer";
+
 // deleteDatabaseSync("db.db");
 const expoDb = openDatabaseSync("db.db");
 const db = drizzle(expoDb);
@@ -129,11 +131,17 @@ export default function RootLayout() {
         <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
           <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
           <Drawer
+            screenListeners={{
+              state: (state) => {
+                loadSessions();
+              },
+            }}
             drawerContent={(props) => (
               <CustomDrawerContent
                 {...props}
                 sessions={sessions}
                 loadSessions={loadSessions}
+                deleteChatSession={deleteChatSession}
               />
             )}
             screenOptions={({ navigation }) => ({

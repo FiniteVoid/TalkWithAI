@@ -7,17 +7,20 @@ import { Input } from "./ui/input";
 import { Search } from "~/lib/icons/Search";
 import { Plus } from "~/lib/icons/Plus";
 import { SquarePen } from "~/lib/icons/SquarePen";
+import { Trash2 } from "~/lib/icons/Trash2";
 
 interface CustomDrawerContentProps {
   navigation: any;
   sessions: ChatSession[];
   loadSessions: () => Promise<void>;
+  deleteChatSession: (sessionId: string) => Promise<void>;
 }
 
 export function CustomDrawerContent({
   navigation,
   sessions,
   loadSessions,
+  deleteChatSession,
 }: CustomDrawerContentProps) {
   const [searchState, setSearchState] = React.useState("");
   const [filteredSessions, setFilteredSessions] = React.useState(sessions);
@@ -118,7 +121,7 @@ export function CustomDrawerContent({
             <View key={item.id} className="flex-1 h-14">
               <Button
                 variant={"ghost"}
-                className="items-start py-12 flex-1 pl-4"
+                className="py-12 flex-1 pl-4 flex flex-row justify-between"
                 onPress={() =>
                   navigation.navigate("index", {
                     sessionId: item.id,
@@ -127,7 +130,19 @@ export function CustomDrawerContent({
                 }
                 style={{ padding: 10 }}
               >
-                <Text className="ml-3">{item.topic}</Text>
+                <Text className="ml-3 flex-4 max-w-[12rem] leading-5 overflow-hidden !h-6">
+                  {item.topic}
+                </Text>
+                <Button
+                  className="!w-12 rounded-full flex justify-center items-center"
+                  variant={"ghost"}
+                  onPress={() => {
+                    deleteChatSession(item.id);
+                    loadSessions();
+                  }}
+                >
+                  <Trash2 className="text-foreground/40 stroke-1" size={18} />
+                </Button>
               </Button>
             </View>
           ))}

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { splitIntoSentences } from "../utils/splitIntoSentence";
 
 interface ContentBlock {
   index: number;
@@ -16,11 +17,10 @@ interface StreamEvent {
 }
 
 const useAnthropicStream = ({
-  apiKey,
   chunkSize = 1,
 }: {
-  apiKey: string;
-  chunkSize: number;
+  apiKey?: string;
+  chunkSize?: number;
 }) => {
   const [streamingContent, setStreamingContent] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +28,6 @@ const useAnthropicStream = ({
   const xhrRef = useRef<XMLHttpRequest | null>(null);
   const seenBytesRef = useRef<number>(0);
   const bufferRef = useRef<string>("");
-
-  const splitIntoSentences = (text: string): string[] => {
-    return text.match(/[^.!?]+[.!?]+/g) || [];
-  };
 
   const processBuffer = useCallback(() => {
     if (chunkSize === -1) {
@@ -48,13 +44,15 @@ const useAnthropicStream = ({
 
   const streamResponse = useCallback(
     ({
+      apiKey,
       messages,
       model = "claude-3-5-sonnet-20240620",
-      maxTokens,
+      maxTokens = 4096,
     }: {
+      apiKey?: string;
       messages: { role: string; content: string }[];
-      model: string;
-      maxTokens: number;
+      model?: string;
+      maxTokens?: number;
     }) => {
       setIsLoading(true);
       setError(undefined);
@@ -68,7 +66,7 @@ const useAnthropicStream = ({
 
       xhr.open("POST", "https://api.anthropic.com/v1/messages", true);
       xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.setRequestHeader("X-API-Key", apiKey);
+      xhr.setRequestHeader("X-API-Key", apiKey || "");
       xhr.setRequestHeader("anthropic-version", "2023-06-01");
 
       xhr.onreadystatechange = function () {
@@ -100,7 +98,45 @@ const useAnthropicStream = ({
           processBuffer(); // Process any remaining content in the buffer
           setIsLoading(false);
           if (xhr.status !== 200) {
-            setError(`HTTP error ${xhr.status}: ${xhr.statusText}`);
+            if (xhr.status === 400) {
+              setError(
+                `Invalid request ${JSON.parse(xhr.responseText).error.message}`
+              );
+            } else if (xhr.status === 401) {
+              setError(
+                `Invalid API key ${JSON.parse(xhr.responseText).error.message}`
+              );
+            } else if (xhr.status === 403) {
+              setError(
+                `Forbidden request ${
+                  JSON.parse(xhr.responseText).error.message
+                }`
+              );
+            } else if (xhr.status === 404) {
+              setError(
+                `Resource not found ${
+                  JSON.parse(xhr.responseText).error.message
+                }`
+              );
+            } else if (xhr.status === 429) {
+              setError(
+                `Rate limit exceeded ${
+                  JSON.parse(xhr.responseText).error.message
+                }`
+              );
+            } else if (xhr.status === 500) {
+              setError(
+                `Internal server error ${
+                  JSON.parse(xhr.responseText).error.message
+                }`
+              );
+            } else if (xhr.status === 503) {
+              setError(
+                `Service unavailable ${
+                  JSON.parse(xhr.responseText).error.message
+                }`
+              );
+            }
           }
         }
       };
@@ -121,7 +157,7 @@ const useAnthropicStream = ({
 
       return () => xhr.abort();
     },
-    [apiKey, chunkSize, processBuffer]
+    [chunkSize, processBuffer]
   );
 
   useEffect(() => {

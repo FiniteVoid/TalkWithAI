@@ -1,4 +1,3 @@
-// useSpeech.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as Speech from "expo-speech";
 
@@ -11,41 +10,41 @@ interface UseSpeechOptions {
   onSpeechError?: (error: any) => void;
 }
 
-const useSpeech = (content: string[], options: UseSpeechOptions = {}) => {
+// Global state to ensure only one instance is active
+let globalIsSpeaking = false;
+let globalStopFunction: (() => void) | null = null;
+
+const useSpeech = (
+  streamingContent: string[] = [],
+  options: UseSpeechOptions = {}
+) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [isDone, setIsDone] = useState<boolean | undefined>(undefined);
   const [currentIndex, setCurrentIndex] = useState(0);
   const contentRef = useRef<string[]>([]);
-  const {
-    rate = 1.0,
-    pitch = 1.0,
-    language = "en-US",
-    onSpeechStart,
-    onSpeechDone,
-    onSpeechError,
-  } = options;
-
-  useEffect(() => {
-    contentRef.current = content;
-  }, [content]);
+  const { onSpeechStart, onSpeechDone, onSpeechError } = options;
 
   const speakNextChunk = useCallback(() => {
     if (currentIndex < contentRef.current.length) {
       const chunk = contentRef.current[currentIndex];
       setIsSpeaking(true);
+      setIsDone(false);
+      globalIsSpeaking = true;
       onSpeechStart?.();
 
       Speech.speak(chunk, {
-        rate,
-        pitch,
-        language,
         onDone: () => {
           setCurrentIndex((prev) => prev + 1);
           setIsSpeaking(false);
+          setIsDone(true);
+          globalIsSpeaking = false;
         },
         onError: (error) => {
           console.error("Speech error:", error);
           setIsSpeaking(false);
+          setIsDone(undefined);
+          globalIsSpeaking = false;
           onSpeechError?.(error);
         },
       });
@@ -54,51 +53,39 @@ const useSpeech = (content: string[], options: UseSpeechOptions = {}) => {
       contentRef.current.length > 0
     ) {
       setIsStarted(false);
+      setIsDone(true);
+      globalIsSpeaking = false;
       onSpeechDone?.();
     }
-  }, [
-    currentIndex,
-    rate,
-    pitch,
-    language,
-    onSpeechStart,
-    onSpeechError,
-    onSpeechDone,
-  ]);
+  }, [currentIndex, onSpeechStart, onSpeechError, onSpeechDone]);
 
   useEffect(() => {
     if (isStarted && !isSpeaking && contentRef.current.length > currentIndex) {
       speakNextChunk();
     }
-  }, [isStarted, isSpeaking, speakNextChunk, currentIndex, content]);
+  }, [isStarted, isSpeaking, speakNextChunk, currentIndex]);
 
-  useEffect(() => {
-    const getVoices = async () => {
-      try {
-        const voices = await Speech.getAvailableVoicesAsync();
-        console.log(voices);
-      } catch (error) {
-        console.error("Error fetching voices:", error);
-      }
-    };
-
-    getVoices();
-  }, []);
-
-  const startSpeech = useCallback(() => {
+  const startSpeech = useCallback((content: string[]) => {
+    if (globalIsSpeaking) {
+      globalStopFunction?.();
+    }
+    contentRef.current = content;
     setIsStarted(true);
     setCurrentIndex(0);
+    globalStopFunction = stopSpeech;
   }, []);
 
   const pauseSpeech = useCallback(() => {
     Speech.pause();
     setIsSpeaking(false);
+    globalIsSpeaking = false;
   }, []);
 
   const resumeSpeech = useCallback(() => {
-    if (isStarted) {
+    if (isStarted && !globalIsSpeaking) {
       Speech.resume();
       setIsSpeaking(true);
+      globalIsSpeaking = true;
     }
   }, [isStarted]);
 
@@ -107,15 +94,32 @@ const useSpeech = (content: string[], options: UseSpeechOptions = {}) => {
     setIsSpeaking(false);
     setIsStarted(false);
     setCurrentIndex(0);
+    globalIsSpeaking = false;
+    globalStopFunction = null;
   }, []);
 
+  const updateContent = useCallback((newContent: string[]) => {
+    contentRef.current = newContent;
+  }, []);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (globalStopFunction === stopSpeech) {
+        stopSpeech();
+      }
+    };
+  }, [stopSpeech]);
+
   return {
+    isDone,
     isSpeaking,
     isStarted,
     startSpeech,
     pauseSpeech,
     resumeSpeech,
     stopSpeech,
+    updateContent,
   };
 };
 

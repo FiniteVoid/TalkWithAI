@@ -4,7 +4,8 @@ import useAnthropicStream from "~/src/adapters/anthropic";
 import { Text } from "~/components/ui/text";
 import * as Speech from "expo-speech";
 import useSpeech from "~/src/services/speech";
-
+import { startActivityAsync, ActivityAction } from "expo-intent-launcher";
+import { getManagedAPIKey } from "~/src/services/keyManagement";
 const AnthropicStreamComponent = ({
   apiKey = "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",
 }: {
@@ -13,34 +14,49 @@ const AnthropicStreamComponent = ({
   const { streamingContent, isLoading, error, streamResponse, stopStream } =
     useAnthropicStream({ apiKey, chunkSize: -1 });
 
-  const { isSpeaking, pauseSpeech, resumeSpeech, stopSpeech, startSpeech } =
-    useSpeech(streamingContent, {
-      onSpeechStart: () => console.log("Speech started"),
-      onSpeechDone: () => console.log("Speech finished"),
-      onSpeechError: (error) => console.error("Speech error:", error),
-    });
+  const {
+    isSpeaking,
+    pauseSpeech,
+    resumeSpeech,
+    stopSpeech,
+    startSpeech,
+    updateContent,
+  } = useSpeech(streamingContent, {
+    onSpeechStart: () => console.log("Speech started"),
+    onSpeechDone: () => console.log("Speech finished"),
+    onSpeechError: (error) => console.error("Speech error:", error),
+  });
 
-  const handleStartStream = () => {
+  const handleStartStream = async () => {
     streamResponse({
+      apiKey: (await getManagedAPIKey()) || apiKey,
       messages: [
         {
           role: "user",
-          content: "Hi, tell me a veryyyy short story. Like 100 words or less.",
+          content: "Hi, tell me a veryyyy short story. Like 50 words or less.",
         },
       ],
-      model: "claude-3-5-sonnet-20240620",
-      maxTokens: 1024,
     });
   };
 
+  useEffect(() => {
+    if (streamingContent.length) {
+      updateContent(streamingContent);
+    }
+  }, [streamingContent]);
+
   return (
     <View>
+      <Button
+        title="TTS Settings"
+        onPress={() => startActivityAsync("com.android.settings.TTS_SETTINGS")}
+      />
       <Button
         title="Start Stream"
         onPress={() => {
           handleStartStream();
           stopSpeech();
-          startSpeech();
+          startSpeech([]);
         }}
         disabled={isLoading}
       />

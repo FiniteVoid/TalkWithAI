@@ -16,6 +16,10 @@ import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import { Text } from "~/components/ui/text";
 import * as SecureStore from "expo-secure-store";
+import {
+  getManagedAPIKey,
+  setManagedAPIKey,
+} from "~/src/services/keyManagement";
 interface APIKeyDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,7 +46,7 @@ export function APIKeyDialog({ isOpen, onClose }: APIKeyDialogProps) {
 
   useEffect(() => {
     const fetchAPIKey = async () => {
-      const anthropicAPI = await SecureStore.getItemAsync("anthropicAPI");
+      const anthropicAPI = await getManagedAPIKey();
       if (anthropicAPI) {
         setValue("anthropicApiKey", anthropicAPI);
       }
@@ -56,7 +60,8 @@ export function APIKeyDialog({ isOpen, onClose }: APIKeyDialogProps) {
       // Process the valid form data
       console.log(data);
       // Save the API key
-      await SecureStore.setItemAsync("anthropicAPI", data.anthropicApiKey);
+
+      await setManagedAPIKey(data.anthropicApiKey);
       onClose();
     } else {
       // Focus on the first invalid field

@@ -15,13 +15,14 @@ const DialogClose = DialogPrimitive.Close;
 
 const DialogOverlayWeb = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> &
+    DialogOverlayProps
+>(({ opacity, className, ...props }, ref) => {
   const { open } = DialogPrimitive.useRootContext();
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "z-50 bg-black/80 flex justify-center items-center p-2 absolute top-0 right-0 bottom-0 left-0",
+        `z-50 bg-background/${opacity} flex justify-center items-center p-2 absolute top-0 right-0 bottom-0 left-0`,
         open
           ? "web:animate-in web:fade-in-0"
           : "web:animate-out web:fade-out-0",
@@ -37,13 +38,14 @@ DialogOverlayWeb.displayName = "DialogOverlayWeb";
 
 const DialogOverlayNative = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> &
+    DialogOverlayProps
+>(({ className, opacity = 80, children, ...props }, ref) => {
   return (
     <DialogPrimitive.Overlay
       style={StyleSheet.absoluteFill}
       className={cn(
-        "z-50 flex bg-black/80 justify-center items-center p-2",
+        `z-50 flex bg-black/${opacity} justify-center items-center p-2`,
         className
       )}
       {...props}
@@ -59,9 +61,15 @@ const DialogOverlayNative = React.forwardRef<
   );
 });
 
+type DialogOverlayProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Overlay
+> & {
+  opacity?: number;
+};
+
 DialogOverlayNative.displayName = "DialogOverlayNative";
 
-const DialogOverlay = Platform.select({
+const DialogOverlay: React.FC<DialogOverlayProps> = Platform.select({
   web: DialogOverlayWeb,
   default: DialogOverlayNative,
 });
@@ -70,42 +78,58 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     portalHost?: string;
+    showX?: boolean;
+    overlayOpacity?: number;
   }
->(({ className, children, portalHost, ...props }, ref) => {
-  const { open } = DialogPrimitive.useRootContext();
-  return (
-    <DialogPortal hostName={portalHost}>
-      <DialogOverlay>
-        <DialogPrimitive.Content
-          ref={ref}
-          className={cn(
-            "z-50 max-w-lg gap-4 border border-border web:cursor-default bg-background p-6 shadow-lg web:duration-200 rounded-lg",
-            open
-              ? "web:animate-in web:fade-in-0 web:zoom-in-95"
-              : "web:animate-out web:fade-out-0 web:zoom-out-95",
-            className
-          )}
-          {...props}
-        >
-          {children}
-          <DialogPrimitive.Close
-            className={
-              "absolute right-4 top-4 p-0.5 web:group rounded-sm opacity-70 web:ring-offset-background web:transition-opacity web:hover:opacity-100 web:focus:outline-none web:focus:ring-2 web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none"
-            }
+>(
+  (
+    {
+      showX = true,
+      overlayOpacity = 80,
+      className,
+      children,
+      portalHost,
+      ...props
+    },
+    ref
+  ) => {
+    const { open } = DialogPrimitive.useRootContext();
+    return (
+      <DialogPortal hostName={portalHost}>
+        <DialogOverlay opacity={overlayOpacity}>
+          <DialogPrimitive.Content
+            ref={ref}
+            className={cn(
+              "z-50 max-w-lg gap-4 border border-border web:cursor-default bg-background p-6 shadow-lg web:duration-200 rounded-lg",
+              open
+                ? "web:animate-in web:fade-in-0 web:zoom-in-95"
+                : "web:animate-out web:fade-out-0 web:zoom-out-95",
+              className
+            )}
+            {...props}
           >
-            <X
-              size={Platform.OS === "web" ? 16 : 18}
-              className={cn(
-                "text-muted-foreground",
-                open && "text-accent-foreground"
+            {children}
+            <DialogPrimitive.Close
+              className={
+                "absolute right-4 top-4 p-0.5 web:group rounded-sm opacity-70 web:ring-offset-background web:transition-opacity web:hover:opacity-100 web:focus:outline-none web:focus:ring-2 web:focus:ring-ring web:focus:ring-offset-2 web:disabled:pointer-events-none"
+              }
+            >
+              {showX && (
+                <X
+                  size={Platform.OS === "web" ? 16 : 18}
+                  className={cn(
+                    "text-muted-foreground",
+                    open && "text-accent-foreground"
+                  )}
+                />
               )}
-            />
-          </DialogPrimitive.Close>
-        </DialogPrimitive.Content>
-      </DialogOverlay>
-    </DialogPortal>
-  );
-});
+            </DialogPrimitive.Close>
+          </DialogPrimitive.Content>
+        </DialogOverlay>
+      </DialogPortal>
+    );
+  }
+);
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({

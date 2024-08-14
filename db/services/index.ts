@@ -97,8 +97,3 @@ export async function getChatSessionWithMessages(sessionId: string) {
   const messages = await getMessagesForSession(sessionId);
   return { ...session, messages };
 }
-
-export async function deleteChatSessionWithMessages(sessionId: string) {
-  // Due to the cascade delete, this will also delete all associated messages
-  await deleteChatSession(sessionId);
-}
