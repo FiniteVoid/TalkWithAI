@@ -60,13 +60,25 @@ const useSpeech = (
   }, [currentIndex, onSpeechStart, onSpeechError, onSpeechDone]);
 
   useEffect(() => {
+    console.log(
+      "isStarted",
+      isStarted,
+      "isSpeaking",
+      isSpeaking,
+      "currentIndex",
+      currentIndex,
+      "contentRef.current",
+      contentRef.current
+    );
     if (isStarted && !isSpeaking && contentRef.current.length > currentIndex) {
       speakNextChunk();
     }
   }, [isStarted, isSpeaking, speakNextChunk, currentIndex]);
 
   const startSpeech = useCallback((content: string[]) => {
+    console.log("Starting speech. AIUSHIASUHFASUFHASIUFHASIFHASHFAU", content);
     if (globalIsSpeaking) {
+      console.warn("Another speech instance is already active");
       globalStopFunction?.();
     }
     contentRef.current = content;
@@ -90,6 +102,7 @@ const useSpeech = (
   }, [isStarted]);
 
   const stopSpeech = useCallback(() => {
+    console.log("Stopping speech!Z!Z!Z!Z!Z!Z!Z!Z!Z!Z!Z!Z!Z!ZZ!!Z!ZZ!");
     Speech.stop();
     setIsSpeaking(false);
     setIsStarted(false);
@@ -99,6 +112,10 @@ const useSpeech = (
   }, []);
 
   const updateContent = useCallback((newContent: string[]) => {
+    // if (!isStarted && !globalIsSpeaking) {
+    //   startSpeech(newContent);
+    //   return;
+    // }
     contentRef.current = newContent;
   }, []);
 

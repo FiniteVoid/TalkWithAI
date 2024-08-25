@@ -58,7 +58,7 @@ const AnthropicStreamComponent = ({
           stopSpeech();
           startSpeech([]);
         }}
-        disabled={isLoading}
+        disabled={isLoading || isSpeaking}
       />
       {isLoading && <Text>Loading...</Text>}
       {error && <Text>Error: {error}</Text>}

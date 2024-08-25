@@ -180,6 +180,7 @@ export function VoiceModeDialog({
 
   useEffect(() => {
     if (isDoneSpeaking) {
+      stopSpeech();
       dispatch({ type: "FINISH_SPEAKING" });
     }
   }, [isDoneSpeaking]);
@@ -187,6 +188,8 @@ export function VoiceModeDialog({
   useEffect(() => {
     if (streamData.isLoading && streamData.streamingContent.length > 0) {
       dispatch({ type: "RECEIVE_FROM_PARENT" });
+      console.log("Received from parent:", streamData.streamingContent);
+      startSpeech(streamData.streamingContent);
       // Only dispatch START_SPEAKING if we haven't started speaking yet
       if (state === "RECEIVING") {
         dispatch({ type: "START_SPEAKING" });
@@ -197,18 +200,19 @@ export function VoiceModeDialog({
   useEffect(() => {
     if (streamData.streamingContent.length > 0) {
       updateContent(streamData.streamingContent);
-      if (state === "SPEAKING_START" || state === "SPEAKING") {
+      if (state === "SPEAKING") {
         dispatch({ type: "UPDATE_SPEECH" });
       }
     }
   }, [streamData.streamingContent, updateContent, state]);
 
   useEffect(() => {
-    if (streamData.streamingContent.length > 0) {
-      updateContent(streamData.streamingContent);
-      dispatch({ type: "UPDATE_SPEECH" });
-    }
-  }, [streamData.streamingContent, updateContent]);
+    console.log("State:", state);
+  }, [state]);
+
+  // useEffect(() => {
+  //   console.log("Streaming content:", streamData.streamingContent);
+  // }, [streamData.streamingContent]);
 
   useEffect(() => {
     // console.log("Start:", state);
@@ -229,10 +233,10 @@ export function VoiceModeDialog({
         break;
       case "SPEAKING_START":
         startSpeech(streamData.streamingContent);
+        dispatch({ type: "UPDATE_SPEECH" });
         break;
       case "SPEAKING_DONE":
         console.log("Finished speaking!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        stopSpeech();
         setListeningResults([]);
         dispatch({ type: "START_LISTENING" });
         break;
