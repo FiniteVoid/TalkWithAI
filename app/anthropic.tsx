@@ -6,11 +6,7 @@ import * as Speech from "expo-speech";
 import useSpeech from "~/src/services/speech";
 import { startActivityAsync, ActivityAction } from "expo-intent-launcher";
 import { getManagedAPIKey } from "~/src/services/keyManagement";
-const AnthropicStreamComponent = ({
-  apiKey = "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",
-}: {
-  apiKey: string;
-}) => {
+const AnthropicStreamComponent = ({ apiKey = "" }: { apiKey: string }) => {
   const { streamingContent, isLoading, error, streamResponse, stopStream } =
     useAnthropicStream({ apiKey, chunkSize: -1 });
 
