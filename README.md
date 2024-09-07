@@ -1,16 +1,4 @@
-# Talk To AI
+# Talk With AI. Mainly for Claude
 
-A starting point to help you set up your project quickly and use the common components provided by `react-native-reusables`. The idea is to make it easier for you to get started.
-
-## Features
-
-- NativeWind v4
-- Dark and light mode
-  - Android Navigation Bar matches mode
-  - Persistant mode
-- Common components
-  - ThemeToggle, Avatar, Button, Card, Progress, Text, Tooltip
-
-<img src="https://github.com/mrzachnugent/react-native-reusables/assets/63797719/42c94108-38a7-498b-9c70-18640420f1bc"
-     alt="talk-to-ai-template"
-     style="width:270px;" />
+![snapA](https://github.com/user-attachments/assets/3e692a7b-b49e-4601-9489-5b8b2672e88d)
+![snapB](https://github.com/user-attachments/assets/badf8b29-1d69-47c7-b4c7-7d9c9a52d911)
